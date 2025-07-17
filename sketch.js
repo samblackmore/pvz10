@@ -6,6 +6,11 @@ let almanacButton, startGameButton;
 let selectedZombie = null;
 let sunCount = 50; // Starting suns
 
+// Sun drop mechanic
+let suns = [];
+let sunDropTimer = 0;
+let sunDropInterval = 120; // frames between sun drops (2 seconds at 60fps)
+
 const avatarFiles = [
   { name: 'drummer', file: 'drummer.png', display: 'Drummer Zombie' },
   { name: 'onion', file: 'onion.png', display: 'Onion Zombie' },
@@ -55,6 +60,7 @@ function setupMenuButtons() {
       gameState = 'game';
       almanacButton.hide();
       startGameButton.hide();
+      resetGame();
     });
     startGameButton.style('font-size', '18px');
     startGameButton.style('border-radius', '8px');
@@ -64,6 +70,12 @@ function setupMenuButtons() {
   }
   startGameButton.size(Math.max(120, windowWidth * 0.12), 40);
   startGameButton.position(windowWidth / 2 + 20, windowHeight - 100);
+}
+
+function resetGame() {
+  sunCount = 50;
+  suns = [];
+  sunDropTimer = 0;
 }
 
 function draw() {
@@ -183,6 +195,64 @@ function drawGame() {
       rect(x, y, cellW, cellH);
     }
   }
+
+  // --- SUN DROP MECHANIC ---
+  if (frameCount > 1) {
+    sunDropTimer--;
+    if (sunDropTimer <= 0) {
+      spawnSun(gridX, gridY, gridW, gridH);
+      sunDropTimer = sunDropInterval + int(random(-30, 60)); // randomize interval
+    }
+  }
+  // Update and draw suns
+  for (let i = suns.length - 1; i >= 0; i--) {
+    let sun = suns[i];
+    sun.update();
+    sun.draw();
+    if (sun.collected) {
+      suns.splice(i, 1);
+    }
+  }
+}
+
+function spawnSun(gridX, gridY, gridW, gridH) {
+  let x = gridX + random(0, gridW);
+  let targetY = gridY + random(0, gridH);
+  suns.push(new Sun(x, -40, x, targetY));
+}
+
+class Sun {
+  constructor(x, y, targetX, targetY) {
+    this.x = x;
+    this.y = y;
+    this.targetX = targetX;
+    this.targetY = targetY;
+    this.radius = Math.max(30, width * 0.025);
+    this.speed = Math.max(2, height * 0.008);
+    this.landed = false;
+    this.collected = false;
+  }
+  update() {
+    if (!this.landed) {
+      let dy = this.targetY - this.y;
+      if (abs(dy) < this.speed) {
+        this.y = this.targetY;
+        this.landed = true;
+      } else {
+        this.y += this.speed;
+      }
+    }
+  }
+  draw() {
+    fill(255, 230, 60);
+    stroke(255, 200, 0);
+    strokeWeight(3);
+    ellipse(this.x, this.y, this.radius * 2);
+    noStroke();
+  }
+  isUnderMouse(mx, my) {
+    return dist(mx, my, this.x, this.y) < this.radius;
+  }
 }
 
 function mousePressed() {
@@ -208,6 +278,15 @@ function mousePressed() {
       almanacButton.show();
       startGameButton.show();
       selectedZombie = null;
+    }
+  } else if (gameState === 'game') {
+    // Check for sun collection
+    for (let i = suns.length - 1; i >= 0; i--) {
+      if (suns[i].isUnderMouse(mouseX, mouseY)) {
+        sunCount += 25;
+        suns[i].collected = true;
+        return;
+      }
     }
   }
 }
