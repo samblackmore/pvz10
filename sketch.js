@@ -1,9 +1,10 @@
 // --- Asset variables ---
 let menuBg;
 let avatars = {};
-let gameState = 'menu'; // 'menu' or 'almanac'
-let almanacButton;
+let gameState = 'menu'; // 'menu', 'almanac', or 'game'
+let almanacButton, startGameButton;
 let selectedZombie = null;
+let sunCount = 50; // Starting suns
 
 const avatarFiles = [
   { name: 'drummer', file: 'drummer.png', display: 'Drummer Zombie' },
@@ -21,20 +22,22 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  setupAlmanacButton();
+  setupMenuButtons();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  setupAlmanacButton();
+  setupMenuButtons();
 }
 
-function setupAlmanacButton() {
+function setupMenuButtons() {
+  // Almanac button
   if (!almanacButton) {
     almanacButton = createButton('Open Almanac');
     almanacButton.mousePressed(() => {
       gameState = 'almanac';
       almanacButton.hide();
+      startGameButton.hide();
     });
     almanacButton.style('font-size', '18px');
     almanacButton.style('border-radius', '8px');
@@ -43,7 +46,24 @@ function setupAlmanacButton() {
     almanacButton.style('cursor', 'pointer');
   }
   almanacButton.size(Math.max(120, windowWidth * 0.12), 40);
-  almanacButton.position(windowWidth / 2 - almanacButton.width / 2, windowHeight - 100);
+  almanacButton.position(windowWidth / 2 - almanacButton.width - 20, windowHeight - 100);
+
+  // Start Game button
+  if (!startGameButton) {
+    startGameButton = createButton('Start Game');
+    startGameButton.mousePressed(() => {
+      gameState = 'game';
+      almanacButton.hide();
+      startGameButton.hide();
+    });
+    startGameButton.style('font-size', '18px');
+    startGameButton.style('border-radius', '8px');
+    startGameButton.style('background', '#fff');
+    startGameButton.style('border', '2px solid #444');
+    startGameButton.style('cursor', 'pointer');
+  }
+  startGameButton.size(Math.max(120, windowWidth * 0.12), 40);
+  startGameButton.position(windowWidth / 2 + 20, windowHeight - 100);
 }
 
 function draw() {
@@ -51,6 +71,8 @@ function draw() {
     drawMenu();
   } else if (gameState === 'almanac') {
     drawAlmanac();
+  } else if (gameState === 'game') {
+    drawGame();
   }
 }
 
@@ -62,11 +84,11 @@ function drawMenu() {
   textSize(Math.max(32, width * 0.05));
   text('Plants vs Zombies 10', width / 2, 40);
   almanacButton.show();
+  startGameButton.show();
 }
 
 function drawAlmanac() {
   background(30);
-  // Responsive grid and pane
   let margin = Math.max(20, width * 0.03);
   let gridX = margin, gridY = margin, gridW = Math.max(320, width * 0.45), gridH = height - margin * 2;
   let cols = 2, rows = Math.ceil(avatarFiles.length / cols);
@@ -78,7 +100,6 @@ function drawAlmanac() {
     let x = gridX + col * (cellW + pad);
     let y = gridY + row * (cellH + pad);
     let av = avatarFiles[i];
-    // Highlight if selected
     if (selectedZombie === av.name) {
       stroke(255, 215, 0);
       strokeWeight(4);
@@ -94,7 +115,6 @@ function drawAlmanac() {
     textSize(Math.max(14, cellW * 0.13));
     text(av.display, x + cellW / 2, y + cellH + 4);
   }
-  // Details pane on the right
   let paneX = gridX + gridW + margin;
   fill(40);
   stroke(80);
@@ -115,13 +135,58 @@ function drawAlmanac() {
     textSize(Math.max(16, width * 0.015));
     text('Select a zombie from the grid to see details.', paneX + 24, gridY + 70, width - paneX - 80, 200);
   }
-  // Back button
   drawBackButton();
+}
+
+function drawGame() {
+  background(34, 139, 34);
+  // Layout constants
+  let margin = Math.max(20, width * 0.03);
+  let panelW = Math.max(120, width * 0.13);
+  let gridW = width - panelW - margin * 3;
+  let gridH = height - margin * 2;
+  let rows = 5, cols = 10;
+  let cellW = gridW / cols;
+  let cellH = gridH / rows;
+  let gridX = panelW + margin * 2;
+  let gridY = margin;
+
+  // Draw left panel (for plant selection)
+  fill(60, 120, 60);
+  rect(margin, margin, panelW, gridH, 18);
+  fill(255);
+  textAlign(CENTER, TOP);
+  textSize(Math.max(18, panelW * 0.18));
+  text('Plants', margin + panelW / 2, margin + 16);
+  // (Plant icons will go here in the future)
+
+  // Draw sun counter at top
+  let sunPanelW = Math.max(120, width * 0.13);
+  let sunPanelH = 50;
+  fill(255, 230, 120);
+  rect(width - sunPanelW - margin, margin, sunPanelW, sunPanelH, 16);
+  fill(80, 60, 0);
+  textAlign(CENTER, CENTER);
+  textSize(Math.max(20, sunPanelH * 0.5));
+  text('☀ ' + sunCount, width - sunPanelW / 2 - margin, margin + sunPanelH / 2);
+
+  // Draw checkerboard grid
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let x = gridX + c * cellW;
+      let y = gridY + r * cellH;
+      if ((r + c) % 2 === 0) {
+        fill(80, 160, 80);
+      } else {
+        fill(60, 140, 60);
+      }
+      rect(x, y, cellW, cellH);
+    }
+  }
 }
 
 function mousePressed() {
   if (gameState === 'almanac') {
-    // Check if clicked on an avatar
     let margin = Math.max(20, width * 0.03);
     let gridX = margin, gridY = margin, gridW = Math.max(320, width * 0.45), gridH = height - margin * 2;
     let cols = 2, cellW = Math.max(100, gridW / cols - margin), cellH = Math.max(100, (gridH - (Math.ceil(avatarFiles.length / cols) - 1) * margin) / Math.ceil(avatarFiles.length / cols)), pad = margin;
@@ -138,10 +203,10 @@ function mousePressed() {
         return;
       }
     }
-    // Check if clicked back
     if (mouseX > width - Math.max(120, width * 0.12) && mouseY > height - 60) {
       gameState = 'menu';
       almanacButton.show();
+      startGameButton.show();
       selectedZombie = null;
     }
   }
