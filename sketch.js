@@ -33,6 +33,30 @@ const plantTypes = [
     avatar: 'sunflower', // key in avatars
     cost: 100
     // In the future, add: image, description, etc.
+  },
+  {
+    name: 'double',
+    display: 'Double Plant',
+    avatar: 'double',
+    cost: 150
+  },
+  {
+    name: 'snow',
+    display: 'Snow Plant',
+    avatar: 'snow',
+    cost: 200
+  },
+  {
+    name: 'slide',
+    display: 'Slide Plant',
+    avatar: 'slide',
+    cost: 175
+  },
+  {
+    name: 'tshirt',
+    display: 'T-Shirt Plant',
+    avatar: 'tshirt',
+    cost: 125
   }
   // Add more plants here
 ];
