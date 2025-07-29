@@ -32,37 +32,52 @@ const plantTypes = [
     name: 'sunflower',
     display: 'Sunflower',
     avatar: 'sunflower', // key in avatars
-    cost: 100
-    // In the future, add: image, description, etc.
+    cost: 100,
+    shootFreq: 120, // frames between shots
+    peaColor: [34, 139, 34], // green
+    peaSize: 8
   },
   {
     name: 'double',
     display: 'Double Plant',
     avatar: 'double',
-    cost: 150
+    cost: 150,
+    shootFreq: 90, // faster shooting
+    peaColor: [34, 139, 34], // green
+    peaSize: 10
   },
   {
     name: 'snow',
     display: 'Snow Plant',
     avatar: 'snow',
-    cost: 200
+    cost: 200,
+    shootFreq: 150, // slower shooting
+    peaColor: [240, 248, 255], // white/ice
+    peaSize: 12
   },
   {
     name: 'slide',
     display: 'Slide Plant',
     avatar: 'slide',
-    cost: 175
+    cost: 175,
+    shootFreq: 100, // medium speed
+    peaColor: [34, 139, 34], // green
+    peaSize: 9
   },
   {
     name: 'tshirt',
     display: 'T-Shirt Plant',
     avatar: 'tshirt',
-    cost: 125
+    cost: 125,
+    shootFreq: 110, // medium speed
+    peaColor: [34, 139, 34], // green
+    peaSize: 8
   }
   // Add more plants here
 ];
 let selectedPlantType = null;
-let planted = []; // Array of {type, row, col}
+let planted = []; // Array of {type, row, col, shootTimer}
+let peas = []; // Array of pea objects
 
 function preload() {
   menuBg = loadImage('assets/images/menu/background.png');
@@ -138,6 +153,7 @@ function resetGame() {
   sunDropTimer = 0;
   selectedPlantType = null;
   planted = [];
+  peas = [];
 }
 
 function draw() {
@@ -297,6 +313,18 @@ function drawGame() {
     }
   }
 
+  // Update and draw peas
+  for (let i = peas.length - 1; i >= 0; i--) {
+    peas[i].update();
+    peas[i].draw();
+    if (peas[i].x > width) {
+      peas.splice(i, 1);
+    }
+  }
+
+  // Update plant shooting
+  updatePlantShooting(gridX, gridY, cellW, cellH);
+
   // --- SUN DROP MECHANIC ---
   if (frameCount > 1) {
     sunDropTimer--;
@@ -313,6 +341,44 @@ function drawGame() {
     if (sun.collected) {
       suns.splice(i, 1);
     }
+  }
+}
+
+function updatePlantShooting(gridX, gridY, cellW, cellH) {
+  for (let plant of planted) {
+    if (!plant.shootTimer) {
+      plant.shootTimer = 0;
+    }
+    plant.shootTimer++;
+    
+    let plantType = plantTypes.find(pt => pt.name === plant.type);
+    if (plant.shootTimer >= plantType.shootFreq) {
+      // Shoot a pea
+      let peaX = gridX + plant.col * cellW + cellW * 0.8;
+      let peaY = gridY + plant.row * cellH + cellH * 0.5;
+      peas.push(new Pea(peaX, peaY, plantType.peaColor, plantType.peaSize));
+      plant.shootTimer = 0;
+    }
+  }
+}
+
+class Pea {
+  constructor(x, y, color, size) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = size;
+    this.speed = 5;
+  }
+  
+  update() {
+    this.x += this.speed;
+  }
+  
+  draw() {
+    fill(this.color[0], this.color[1], this.color[2]);
+    noStroke();
+    ellipse(this.x, this.y, this.size, this.size);
   }
 }
 
@@ -419,7 +485,7 @@ function mousePressed() {
     let margin = Math.max(20, width * 0.03);
     let panelW = Math.max(120, width * 0.13);
     let plantIconSize = Math.max(60, panelW * 0.7);
-    let plantPad = 24;
+    let plantPad = 40; // Updated to match the new spacing
     for (let i = 0; i < plantTypes.length; i++) {
       let px = margin + panelW / 2;
       let py = margin + 60 + i * (plantIconSize + plantPad);
@@ -453,7 +519,12 @@ function mousePressed() {
             // Check if cell is empty
             let occupied = planted.some(p => p.row === r && p.col === c);
             if (!occupied && sunCount >= selectedPlantType.cost) {
-              planted.push({ type: selectedPlantType.name, row: r, col: c });
+              planted.push({ 
+                type: selectedPlantType.name, 
+                row: r, 
+                col: c, 
+                shootTimer: 0 
+              });
               sunCount -= selectedPlantType.cost;
               selectedPlantType = null;
             }
