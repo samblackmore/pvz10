@@ -19,16 +19,37 @@ const SUN_TYPES = [
 ];
 
 const avatarFiles = [
-  { name: 'drummer', file: 'drummer.png', display: 'Drummer Zombie' },
-  { name: 'onion', file: 'onion.png', display: 'Onion Zombie' },
-  { name: 'blueberries', file: 'blueberries.png', display: 'Blueberries Zombie' },
-  { name: 'nurse', file: 'nurse.png', display: 'Nurse Zombie' },
+  { name: 'drummer', file: 'drummer.png', display: 'Drummer Zombie', type: 'zombie' },
+  { name: 'onion', file: 'onion.png', display: 'Onion Zombie', type: 'zombie' },
+  { name: 'blueberries', file: 'blueberries.png', display: 'Blueberries Zombie', type: 'zombie' },
+  { name: 'nurse', file: 'nurse.png', display: 'Nurse Zombie', type: 'zombie' },
 ];
+
+// --- Plant definitions ---
+const plantTypes = [
+  {
+    name: 'sunflower',
+    display: 'Sunflower',
+    avatar: 'sunflower', // key in avatars
+    cost: 100
+    // In the future, add: image, description, etc.
+  }
+  // Add more plants here
+];
+let selectedPlantType = null;
+let planted = []; // Array of {type, row, col}
 
 function preload() {
   menuBg = loadImage('assets/images/menu/background.png');
+  // Load zombie avatars
   for (let av of avatarFiles) {
-    avatars[av.name] = loadImage('assets/images/avatars/' + av.file);
+    if (av.type === 'zombie') {
+      avatars[av.name] = loadImage('assets/images/avatars/zombies/' + av.file);
+    }
+  }
+  // Load plant avatars
+  for (let plant of plantTypes) {
+    avatars[plant.avatar] = loadImage('assets/images/avatars/plants/' + plant.avatar + '.png');
   }
 }
 
@@ -83,6 +104,8 @@ function resetGame() {
   sunCount = 50;
   suns = [];
   sunDropTimer = 0;
+  selectedPlantType = null;
+  planted = [];
 }
 
 function draw() {
@@ -190,7 +213,37 @@ function drawGame() {
   textAlign(CENTER, TOP);
   textSize(Math.max(18, panelW * 0.18));
   text('Plants', margin + panelW / 2, margin + 16);
-  // (Plant icons will go here in the future)
+
+  // Draw plant inventory (vertical list)
+  let plantIconSize = Math.max(60, panelW * 0.7);
+  let plantPad = 24;
+  for (let i = 0; i < plantTypes.length; i++) {
+    let px = margin + panelW / 2;
+    let py = margin + 60 + i * (plantIconSize + plantPad);
+    let plant = plantTypes[i];
+    // Highlight if selected
+    if (selectedPlantType && selectedPlantType.name === plant.name) {
+      stroke(255, 215, 0);
+      strokeWeight(4);
+    } else {
+      noStroke();
+    }
+    fill(80, 180, 80);
+    rect(px - plantIconSize / 2 - 8, py - 8, plantIconSize + 16, plantIconSize + 16, 16);
+    image(avatars[plant.avatar], px - plantIconSize / 2, py, plantIconSize, plantIconSize);
+    noStroke();
+    fill(255);
+    textAlign(CENTER, TOP);
+    textSize(Math.max(16, plantIconSize * 0.22));
+    text(plant.display, px, py + plantIconSize + 2);
+    textSize(Math.max(14, plantIconSize * 0.18));
+    text('Cost: ' + plant.cost, px, py + plantIconSize + 26);
+    // Gray overlay if not enough suns
+    if (sunCount < plant.cost) {
+      fill(0, 0, 0, 120);
+      rect(px - plantIconSize / 2, py, plantIconSize, plantIconSize, 12);
+    }
+  }
 
   // Draw checkerboard grid
   for (let r = 0; r < rows; r++) {
@@ -203,6 +256,12 @@ function drawGame() {
         fill(60, 140, 60);
       }
       rect(x, y, cellW, cellH);
+      // Draw plant if present
+      let plantHere = planted.find(p => p.row === r && p.col === c);
+      if (plantHere) {
+        let plant = plantTypes.find(pt => pt.name === plantHere.type);
+        image(avatars[plant.avatar], x + cellW * 0.1, y + cellH * 0.1, cellW * 0.8, cellH * 0.8);
+      }
     }
   }
 
@@ -322,6 +381,53 @@ function mousePressed() {
         sunCount += suns[i].type.value;
         suns[i].collected = true;
         return;
+      }
+    }
+    // Check for plant selection
+    let margin = Math.max(20, width * 0.03);
+    let panelW = Math.max(120, width * 0.13);
+    let plantIconSize = Math.max(60, panelW * 0.7);
+    let plantPad = 24;
+    for (let i = 0; i < plantTypes.length; i++) {
+      let px = margin + panelW / 2;
+      let py = margin + 60 + i * (plantIconSize + plantPad);
+      if (
+        mouseX > px - plantIconSize / 2 && mouseX < px + plantIconSize / 2 &&
+        mouseY > py && mouseY < py + plantIconSize
+      ) {
+        if (sunCount >= plantTypes[i].cost) {
+          selectedPlantType = plantTypes[i];
+        }
+        return;
+      }
+    }
+    // Check for planting on grid
+    if (selectedPlantType) {
+      let gridW = width - panelW - margin * 3;
+      let gridH = height - margin * 2;
+      let rows = 5, cols = 10;
+      let cellW = gridW / cols;
+      let cellH = gridH / rows;
+      let gridX = panelW + margin * 2;
+      let gridY = margin;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let x = gridX + c * cellW;
+          let y = gridY + r * cellH;
+          if (
+            mouseX > x && mouseX < x + cellW &&
+            mouseY > y && mouseY < y + cellH
+          ) {
+            // Check if cell is empty
+            let occupied = planted.some(p => p.row === r && p.col === c);
+            if (!occupied && sunCount >= selectedPlantType.cost) {
+              planted.push({ type: selectedPlantType.name, row: r, col: c });
+              sunCount -= selectedPlantType.cost;
+              selectedPlantType = null;
+            }
+            return;
+          }
+        }
       }
     }
   }
