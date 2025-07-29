@@ -5,12 +5,13 @@ let gameState = 'menu'; // 'menu', 'almanac', or 'game'
 let almanacButton, startGameButton;
 let selectedZombie = null;
 let sunCount = 50; // Starting suns
+let bgMusic;
 
 // Sun drop mechanic
 let suns = [];
 let sunDropTimer = 0;
 let sunDropInterval = 120; // frames between sun drops (2 seconds at 60fps)
-const MAX_SUNS = 5;
+const MAX_SUNS = 20;
 
 const SUN_TYPES = [
   { name: 'small', value: 5, radius: 20, weight: 0.7 },      // 70% chance
@@ -65,6 +66,7 @@ let planted = []; // Array of {type, row, col}
 
 function preload() {
   menuBg = loadImage('assets/images/menu/background.png');
+  bgMusic = loadSound('assets/music/day.m4a');
   // Load zombie avatars
   for (let av of avatarFiles) {
     if (av.type === 'zombie') {
@@ -80,6 +82,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   setupMenuButtons();
+  // Remove automatic music start - will start on first user interaction
 }
 
 function windowResized() {
@@ -113,6 +116,11 @@ function setupMenuButtons() {
       almanacButton.hide();
       startGameButton.hide();
       resetGame();
+      // Start music on first user interaction
+      if (bgMusic && !bgMusic.isPlaying()) {
+        bgMusic.loop();
+        bgMusic.setVolume(0.5);
+      }
     });
     startGameButton.style('font-size', '18px');
     startGameButton.style('border-radius', '8px');
@@ -240,7 +248,7 @@ function drawGame() {
 
   // Draw plant inventory (vertical list)
   let plantIconSize = Math.max(60, panelW * 0.7);
-  let plantPad = 24;
+  let plantPad = 40; // Increased from 24 to 40 for more spacing
   for (let i = 0; i < plantTypes.length; i++) {
     let px = margin + panelW / 2;
     let py = margin + 60 + i * (plantIconSize + plantPad);
