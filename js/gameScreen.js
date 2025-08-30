@@ -44,6 +44,7 @@ function drawGame() {
   if (!gameOver) {
     updateAndDrawZombies(gridX, gridY, cellW, cellH);
     spawnZombies(gridX, gridY, cellW, cellH);
+    updateAndDrawZombieArms();
   } else {
     drawGameOver();
   }
@@ -101,7 +102,7 @@ function spawnZombies(gridX, gridY, cellW, cellH) {
       x: width - 50, // Start from right side
       y: y + cellH * 0.1, // Slightly offset from grid
       row: row,
-      speed: 0.5, // Pixels per frame
+      speed: 0.25, // Reduced speed (half of 0.5)
       health: 3, // Start with 3 health
       type: 'nurse',
       hitTimer: 0, // Timer for hit flash effect
@@ -187,6 +188,9 @@ function checkZombiePeaCollision(zombie, zombieIndex, cellW, cellH) {
       
       // Remove zombie if health is 0 or below
       if (zombie.health <= 0) {
+        // Spawn zombie arm before removing zombie
+        spawnZombieArm(zombie.x, zombie.y, cellW, cellH);
+        
         zombies.splice(zombieIndex, 1);
         console.log('Zombie defeated!');
         return;
@@ -195,7 +199,89 @@ function checkZombiePeaCollision(zombie, zombieIndex, cellW, cellH) {
   }
 }
 
+// Zombie Arm System Functions
+function spawnZombieArm(zombieX, zombieY, cellW, cellH) {
+  // Random direction (0 to 2π radians)
+  let angle = Math.random() * Math.PI * 2;
+  
+  // Random velocity (3 to 8 pixels per frame)
+  let velocity = 3 + Math.random() * 5;
+  
+  // Calculate velocity components
+  let vx = Math.cos(angle) * velocity;
+  let vy = Math.sin(angle) * velocity;
+  
+  // Random rotation speed
+  let rotationSpeed = (Math.random() - 0.5) * 0.4; // -0.2 to 0.2 radians per frame
+  
+  let arm = {
+    x: zombieX + cellW * 0.4, // Center of zombie
+    y: zombieY + cellH * 0.4,
+    vx: vx,
+    vy: vy,
+    rotation: 0,
+    rotationSpeed: rotationSpeed,
+    fadeTimer: 0,
+    fadeDuration: 60, // Fade over 60 frames (1 second at 60fps)
+    size: Math.min(cellW, cellH) * 0.6 // Proportional to grid size
+  };
+  
+  zombieArms.push(arm);
+  console.log('Zombie arm spawned at:', arm.x, arm.y, 'with velocity:', vx, vy);
+}
 
+function updateAndDrawZombieArms() {
+  for (let i = zombieArms.length - 1; i >= 0; i--) {
+    let arm = zombieArms[i];
+    
+    // Update position
+    arm.x += arm.vx;
+    arm.y += arm.vy;
+    
+    // Update rotation
+    arm.rotation += arm.rotationSpeed;
+    
+    // Update fade timer
+    arm.fadeTimer++;
+    
+    // Calculate fade alpha (255 to 0)
+    let alpha = map(arm.fadeTimer, 0, arm.fadeDuration, 255, 0);
+    
+    // Draw arm with fade effect
+    if (mapImages.zombieArm) {
+      push(); // Save current drawing state
+      
+      // Apply fade effect
+      tint(255, 255, 255, alpha);
+      
+      // Draw at position with rotation
+      translate(arm.x, arm.y);
+      rotate(arm.rotation);
+      imageMode(CENTER);
+      image(mapImages.zombieArm, 0, 0, arm.size, arm.size);
+      imageMode(CORNER);
+      
+      pop(); // Restore drawing state
+    } else {
+      // Fallback: draw a simple arm shape
+      push();
+      translate(arm.x, arm.y);
+      rotate(arm.rotation);
+      
+      fill(139, 69, 19, alpha); // Brown color with fade
+      noStroke();
+      rect(-arm.size/2, -arm.size/2, arm.size, arm.size);
+      
+      pop();
+    }
+    
+    // Remove arm when fade is complete
+    if (arm.fadeTimer >= arm.fadeDuration) {
+      zombieArms.splice(i, 1);
+      console.log('Zombie arm faded away');
+    }
+  }
+}
 
 function drawGameOver() {
   // Semi-transparent overlay

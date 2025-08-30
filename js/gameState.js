@@ -9,6 +9,9 @@ let zombieSpawnTimer = 0;
 let zombieSpawnInterval = 300; // Spawn a zombie every 300 frames (5 seconds at 60fps)
 let gameOver = false;
 
+// Zombie Death Effects
+let zombieArms = [];
+
 function resetGame() {
   sunCount = 50;
   suns = [];
@@ -22,6 +25,7 @@ function resetGame() {
   zombies = [];
   zombieSpawnTimer = 0;
   gameOver = false;
+  zombieArms = [];
   
   // Hide the exit button if it exists
   if (typeof hideExitButton === 'function') {

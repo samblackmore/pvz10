@@ -21,6 +21,7 @@ function loadAssets() {
   
   // Load zombie character images for gameplay
   mapImages.nurseZombie = loadImage('assets/images/characters/zombies/nurse.png');
+  mapImages.zombieArm = loadImage('assets/images/characters/zombies/arm.png');
   
   // Load zombie avatars
   for (let av of avatarFiles) {
