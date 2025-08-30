@@ -2,6 +2,7 @@
 let menuBg;
 let avatars = {};
 let bgMusic;
+let mapImages = {};
 
 const avatarFiles = [
   { name: 'drummer', file: 'drummer.png', display: 'Drummer Zombie', type: 'zombie' },
@@ -13,6 +14,9 @@ const avatarFiles = [
 function loadAssets() {
   menuBg = loadImage('assets/images/menu/background.png');
   bgMusic = loadSound('assets/music/day.m4a');
+  
+  // Load map images
+  mapImages.fireworks = loadImage('assets/images/maps/fireworks.png');
   
   // Load zombie avatars
   for (let av of avatarFiles) {

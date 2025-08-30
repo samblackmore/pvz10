@@ -14,6 +14,15 @@ function windowResized() {
 }
 
 function draw() {
+  // Debug: log state changes
+  if (typeof draw.lastState === 'undefined') {
+    draw.lastState = '';
+  }
+  if (draw.lastState !== gameState) {
+    console.log('Game state changed from', draw.lastState, 'to', gameState);
+    draw.lastState = gameState;
+  }
+  
   if (gameState === 'menu') {
     drawMenu();
   } else if (gameState === 'almanac') {
@@ -42,4 +51,6 @@ function mousePressed() {
     // Check for planting on grid
     handlePlanting(mouseX, mouseY);
   }
+  // If we're in menu state, don't process any other mouse interactions
+  // This prevents map selection from happening when clicking buttons in the menu
 } 

@@ -1,5 +1,6 @@
 // UI System
 let almanacButton, startGameButton;
+let buttonJustClicked = false;
 
 function setupMenuButtons() {
   // Almanac button
@@ -17,15 +18,22 @@ function setupMenuButtons() {
     almanacButton.style('cursor', 'pointer');
   }
   almanacButton.size(Math.max(120, windowWidth * 0.12), 40);
-  almanacButton.position(windowWidth / 2 - almanacButton.width - 20, windowHeight - 100);
+  almanacButton.position(windowWidth / 2 - almanacButton.width - 20, windowHeight / 2 + 60);
 
-  // Start Game button
+  // Play Game button
   if (!startGameButton) {
-    startGameButton = createButton('Start Game');
+    console.log('Creating Play Game button');
+    startGameButton = createButton('Play Game');
     startGameButton.mousePressed(() => {
+      console.log('Play Game button clicked, setting gameState to mapselect');
+      buttonJustClicked = true;
       gameState = 'mapselect';
       almanacButton.hide();
       startGameButton.hide();
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        buttonJustClicked = false;
+      }, 100);
     });
     startGameButton.style('font-size', '18px');
     startGameButton.style('border-radius', '8px');
@@ -34,7 +42,11 @@ function setupMenuButtons() {
     startGameButton.style('cursor', 'pointer');
   }
   startGameButton.size(Math.max(120, windowWidth * 0.12), 40);
-  startGameButton.position(windowWidth / 2 + 20, windowHeight - 100);
+  startGameButton.position(windowWidth / 2 + 20, windowHeight / 2 + 60);
+  
+  // Debug: log button position and size
+  console.log('Play Game button positioned at:', windowWidth / 2 + 20, windowHeight / 2 + 60);
+  console.log('Play Game button size:', startGameButton.width, startGameButton.height);
 }
 
 function handlePlantSelection(mouseX, mouseY) {

@@ -78,11 +78,15 @@ function drawMapSelect() {
     let map = MAPS[i];
     
     // Map button background
-    fill(map.color[0], map.color[1], map.color[2]);
-    stroke(255);
-    strokeWeight(2);
-    rect(x, y, mapWidth, mapHeight, 12);
-    noStroke();
+    if (map.name === 'night' && mapImages.fireworks) {
+      image(mapImages.fireworks, x, y, mapWidth, mapHeight);
+    } else {
+      fill(map.color[0], map.color[1], map.color[2]);
+      stroke(255);
+      strokeWeight(2);
+      rect(x, y, mapWidth, mapHeight, 12);
+      noStroke();
+    }
     
     // Map name
     fill(255);
@@ -96,11 +100,27 @@ function drawMapSelect() {
 }
 
 function handleMapSelection(mouseX, mouseY) {
+  // Only handle map selection if we're in the mapselect state
+  if (gameState !== 'mapselect') {
+    console.log('Not in mapselect state, ignoring map selection');
+    return false;
+  }
+  
+  // Don't handle map selection if a button was just clicked
+  if (typeof buttonJustClicked !== 'undefined' && buttonJustClicked) {
+    console.log('Button just clicked, ignoring map selection');
+    return false;
+  }
+  
+  console.log('Button just clicked flag:', buttonJustClicked);
+  
   let margin = Math.max(20, width * 0.03);
   let cols = 3;
   let rows = Math.ceil(MAPS.length / cols);
   let mapWidth = Math.max(200, (width - margin * (cols + 1)) / cols);
   let mapHeight = Math.max(150, (height - margin * (rows + 2) - 80) / rows);
+  
+  console.log('Map selection check - mouse at:', mouseX, mouseY);
   
   for (let i = 0; i < MAPS.length; i++) {
     let col = i % cols;
@@ -108,10 +128,13 @@ function handleMapSelection(mouseX, mouseY) {
     let x = margin + col * (mapWidth + margin);
     let y = margin + 80 + row * (mapHeight + margin);
     
+    console.log('Map', i, MAPS[i].name, 'at position:', x, y, 'size:', mapWidth, mapHeight);
+    
     if (
       mouseX > x && mouseX < x + mapWidth &&
       mouseY > y && mouseY < y + mapHeight
     ) {
+      console.log('Map selected:', MAPS[i].name, 'setting gameState to game');
       selectedMap = MAPS[i];
       gameState = 'game';
       resetGame();
