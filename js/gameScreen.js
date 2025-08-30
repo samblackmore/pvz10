@@ -1,4 +1,6 @@
 // Game Screen
+let exitButton;
+
 function drawGame() {
   // Use map-specific background
   drawMapBackground();
@@ -34,4 +36,44 @@ function drawGame() {
   
   // Update and draw suns
   updateAndDrawSuns();
+  
+  // Draw exit button
+  drawExitButton();
+}
+
+function drawExitButton() {
+  // Create exit button if it doesn't exist
+  if (!exitButton) {
+    exitButton = createButton('Exit to Map Selection');
+    exitButton.mousePressed(() => {
+      console.log('Exit button clicked, returning to map selection');
+      gameState = 'mapselect';
+      // Reset the game state but keep the selected map
+      resetGame();
+      // Hide the exit button
+      exitButton.hide();
+    });
+    exitButton.style('font-size', '16px');
+    exitButton.style('border-radius', '8px');
+    exitButton.style('background', '#ff6b6b');
+    exitButton.style('border', '2px solid #d63031');
+    exitButton.style('color', 'white');
+    exitButton.style('cursor', 'pointer');
+  }
+  
+  // Position and size the button
+  let buttonWidth = Math.max(150, width * 0.12);
+  let buttonHeight = 40;
+  exitButton.size(buttonWidth, buttonHeight);
+  exitButton.position(width - buttonWidth - 20, 20); // Top right corner
+  
+  // Show the button
+  exitButton.show();
+}
+
+// Function to hide the exit button (called when leaving game state)
+function hideExitButton() {
+  if (exitButton) {
+    exitButton.hide();
+  }
 } 

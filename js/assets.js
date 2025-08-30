@@ -17,6 +17,7 @@ function loadAssets() {
   
   // Load map images
   mapImages.fireworks = loadImage('assets/images/maps/fireworks.png');
+  mapImages.christmas = loadImage('assets/images/maps/xmas.png');
   
   // Load zombie avatars
   for (let av of avatarFiles) {

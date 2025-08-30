@@ -10,6 +10,10 @@ function setupMenuButtons() {
       gameState = 'almanac';
       almanacButton.hide();
       startGameButton.hide();
+      // Hide the exit button when going to almanac
+      if (typeof hideExitButton === 'function') {
+        hideExitButton();
+      }
     });
     almanacButton.style('font-size', '18px');
     almanacButton.style('border-radius', '8px');
@@ -134,6 +138,10 @@ function handleAlmanacInteraction(mouseX, mouseY) {
     almanacButton.show();
     startGameButton.show();
     selectedZombie = null;
+    // Hide the exit button when returning to menu
+    if (typeof hideExitButton === 'function') {
+      hideExitButton();
+    }
     return true;
   }
   return false;

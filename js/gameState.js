@@ -11,6 +11,11 @@ function resetGame() {
   planted = [];
   peas = [];
   // Note: selectedMap is not reset here as it should persist between game sessions
+  
+  // Hide the exit button if it exists
+  if (typeof hideExitButton === 'function') {
+    hideExitButton();
+  }
 }
 
 function drawMenu() {

@@ -80,6 +80,8 @@ function drawMapSelect() {
     // Map button background
     if (map.name === 'night' && mapImages.fireworks) {
       image(mapImages.fireworks, x, y, mapWidth, mapHeight);
+    } else if (map.name === 'christmas' && mapImages.christmas) {
+      image(mapImages.christmas, x, y, mapWidth, mapHeight);
     } else {
       fill(map.color[0], map.color[1], map.color[2]);
       stroke(255);
