@@ -92,24 +92,8 @@ function drawPlantPanel(margin, panelW, gridH) {
 }
 
 function drawPlantedPlants(gridX, gridY, cellW, cellH) {
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 10; c++) {
-      let x = gridX + c * cellW;
-      let y = gridY + r * cellH;
-      if ((r + c) % 2 === 0) {
-        fill(80, 160, 80);
-      } else {
-        fill(60, 140, 60);
-      }
-      rect(x, y, cellW, cellH);
-      // Draw plant if present
-      let plantHere = planted.find(p => p.row === r && p.col === c);
-      if (plantHere) {
-        let plant = plantTypes.find(pt => pt.name === plantHere.type);
-        image(avatars[plant.avatar], x + cellW * 0.1, y + cellH * 0.1, cellW * 0.8, cellH * 0.8);
-      }
-    }
-  }
+  // Use the map-specific grid drawing function
+  drawMapGrid(gridX, gridY, cellW, cellH);
 }
 
 function updatePlantShooting(gridX, gridY, cellW, cellH) {

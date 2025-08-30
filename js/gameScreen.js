@@ -1,6 +1,8 @@
 // Game Screen
 function drawGame() {
-  background(34, 139, 34);
+  // Use map-specific background
+  drawMapBackground();
+  
   // Layout constants
   let margin = Math.max(20, width * 0.03);
   let panelW = Math.max(120, width * 0.13);

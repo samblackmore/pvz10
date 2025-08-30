@@ -1,5 +1,5 @@
 // Game State Management
-let gameState = 'menu'; // 'menu', 'almanac', or 'game'
+let gameState = 'menu'; // 'menu', 'almanac', 'mapselect', or 'game'
 let selectedZombie = null;
 let selectedPlantType = null;
 
@@ -10,6 +10,7 @@ function resetGame() {
   selectedPlantType = null;
   planted = [];
   peas = [];
+  // Note: selectedMap is not reset here as it should persist between game sessions
 }
 
 function drawMenu() {

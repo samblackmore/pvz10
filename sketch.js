@@ -18,6 +18,8 @@ function draw() {
     drawMenu();
   } else if (gameState === 'almanac') {
     drawAlmanac();
+  } else if (gameState === 'mapselect') {
+    drawMapSelect();
   } else if (gameState === 'game') {
     drawGame();
   }
@@ -26,6 +28,8 @@ function draw() {
 function mousePressed() {
   if (gameState === 'almanac') {
     handleAlmanacInteraction(mouseX, mouseY);
+  } else if (gameState === 'mapselect') {
+    handleMapSelection(mouseX, mouseY);
   } else if (gameState === 'game') {
     // Check for sun collection first
     if (checkSunCollection(mouseX, mouseY)) {

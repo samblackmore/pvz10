@@ -23,15 +23,9 @@ function setupMenuButtons() {
   if (!startGameButton) {
     startGameButton = createButton('Start Game');
     startGameButton.mousePressed(() => {
-      gameState = 'game';
+      gameState = 'mapselect';
       almanacButton.hide();
       startGameButton.hide();
-      resetGame();
-      // Start music on first user interaction
-      if (bgMusic && !bgMusic.isPlaying()) {
-        bgMusic.loop();
-        bgMusic.setVolume(0.5);
-      }
     });
     startGameButton.style('font-size', '18px');
     startGameButton.style('border-radius', '8px');
