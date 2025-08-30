@@ -102,8 +102,10 @@ function spawnZombies(gridX, gridY, cellW, cellH) {
       y: y + cellH * 0.1, // Slightly offset from grid
       row: row,
       speed: 0.5, // Pixels per frame
-      health: 100,
-      type: 'nurse'
+      health: 3, // Start with 3 health
+      type: 'nurse',
+      hitTimer: 0, // Timer for hit flash effect
+      hitFlashDuration: 10 // Flash for 10 frames
     };
     
     zombies.push(zombie);
@@ -125,33 +127,63 @@ function updateAndDrawZombies(gridX, gridY, cellW, cellH) {
       return;
     }
     
-    // Draw zombie
+    // Update hit flash timer
+    if (zombie.hitTimer > 0) {
+      zombie.hitTimer--;
+    }
+    
+    // Draw zombie with hit flash effect
     if (mapImages.nurseZombie) {
+      push(); // Save current drawing state
+      
+      // Apply white tint if zombie was recently hit
+      if (zombie.hitTimer > 0) {
+        // Calculate flash intensity (stronger at start, fading out)
+        let flashIntensity = map(zombie.hitTimer, 0, zombie.hitFlashDuration, 255, 0);
+        tint(255, 255, 255, flashIntensity);
+      }
+      
       image(mapImages.nurseZombie, zombie.x, zombie.y, cellW * 0.8, cellH * 0.8);
+      pop(); // Restore drawing state
     } else {
       // Fallback: draw a simple zombie shape
-      fill(100, 200, 100);
+      if (zombie.hitTimer > 0) {
+        fill(255, 255, 255); // White when hit
+      } else {
+        fill(100, 200, 100); // Normal color
+      }
       rect(zombie.x, zombie.y, cellW * 0.8, cellH * 0.8);
     }
     
     // Check collision with peas
-    checkZombiePeaCollision(zombie, i);
+    checkZombiePeaCollision(zombie, i, cellW, cellH);
   }
 }
 
-function checkZombiePeaCollision(zombie, zombieIndex) {
+function checkZombiePeaCollision(zombie, zombieIndex, cellW, cellH) {
   for (let j = peas.length - 1; j >= 0; j--) {
     let pea = peas[j];
     
-    // Simple collision detection
-    if (pea.x < zombie.x + 40 && pea.x + 10 > zombie.x &&
-        pea.y < zombie.y + 40 && pea.y + 10 > zombie.y) {
+    // Get zombie dimensions (using the same size as drawn)
+    let zombieWidth = cellW * 0.8; // Same as drawn zombie size
+    let zombieHeight = cellH * 0.8;
+    
+    // Proper collision detection using actual pea size
+    if (pea.x < zombie.x + zombieWidth && pea.x + pea.size > zombie.x &&
+        pea.y < zombie.y + zombieHeight && pea.y + pea.size > zombie.y) {
+      
+      console.log('Pea hit zombie! Pea at:', pea.x, pea.y, 'Zombie at:', zombie.x, zombie.y);
       
       // Remove pea
       peas.splice(j, 1);
       
       // Reduce zombie health
-      zombie.health -= 25;
+      zombie.health -= 1;
+      
+      // Trigger hit flash effect
+      zombie.hitTimer = zombie.hitFlashDuration;
+      
+      console.log('Zombie health reduced to:', zombie.health);
       
       // Remove zombie if health is 0 or below
       if (zombie.health <= 0) {
@@ -162,6 +194,8 @@ function checkZombiePeaCollision(zombie, zombieIndex) {
     }
   }
 }
+
+
 
 function drawGameOver() {
   // Semi-transparent overlay
