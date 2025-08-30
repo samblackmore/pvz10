@@ -3,6 +3,12 @@ let gameState = 'menu'; // 'menu', 'almanac', 'mapselect', or 'game'
 let selectedZombie = null;
 let selectedPlantType = null;
 
+// Zombie System
+let zombies = [];
+let zombieSpawnTimer = 0;
+let zombieSpawnInterval = 300; // Spawn a zombie every 300 frames (5 seconds at 60fps)
+let gameOver = false;
+
 function resetGame() {
   sunCount = 50;
   suns = [];
@@ -11,6 +17,11 @@ function resetGame() {
   planted = [];
   peas = [];
   // Note: selectedMap is not reset here as it should persist between game sessions
+  
+  // Reset zombie system
+  zombies = [];
+  zombieSpawnTimer = 0;
+  gameOver = false;
   
   // Hide the exit button if it exists
   if (typeof hideExitButton === 'function') {

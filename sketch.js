@@ -40,6 +40,14 @@ function mousePressed() {
   } else if (gameState === 'mapselect') {
     handleMapSelection(mouseX, mouseY);
   } else if (gameState === 'game') {
+    // Check if game is over
+    if (gameOver) {
+      console.log('Game over screen clicked, returning to map selection');
+      gameState = 'mapselect';
+      resetGame();
+      return;
+    }
+    
     // Check for sun collection first
     if (checkSunCollection(mouseX, mouseY)) {
       return;
